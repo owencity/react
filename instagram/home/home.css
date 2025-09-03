@@ -1,0 +1,15 @@
+@import 'reset.css';
+
+.mainContainer {
+    display: grid;
+    grid-template-columns: 1fr 5fr;
+}
+
+.navMenu {
+    height: 100vh;
+}
+
+.secondContainer {
+    background-color: blue;
+    height: 100vh;
+}

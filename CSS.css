@@ -1,0 +1,1637 @@
+/* =======================================================================
+  CSS 조합 레퍼런스 (실전용 주석 강화판)
+  - 목적: "조합에 따라 결과가 달라지는" 핵심 패턴/함정/레시피를 한 파일에 정리
+  - 사용법: 필요한 클래스만 HTML에 붙여서 바로 사용. 주석은 개념 참고.
+  - 범위: reset, display, flex, grid, spacing/box-model, overflow, position,
+          stacking-context, typography, responsive, forms, images, helpers 등
+======================================================================= */
+
+
+/* =======================
+  [0] Reset & 공통 유틸
+  - box-sizing:border-box: padding/border가 width 안으로 포함 → 계산 쉬움
+  - normalize 성격은 최소화. 프로젝트 성격에 맞춰 추가 권장.
+======================= */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;                 /* 브라우저 기본 margin 제거 (특히 body 8px) */
+  line-height: 1.5;          /* 가독성 기본값 */
+  -webkit-text-size-adjust: 100%; /* iOS 폰트 확대 방지 */
+}
+
+img, svg, video, canvas {
+  display: block;            /* 인라인 요소 간 밑칫선(baseline) 간격 이슈 완화 */
+  max-width: 100%;           /* 컨테이너 폭 넘치지 않게 */
+}
+
+button, input, textarea, select {
+  font: inherit;             /* 폰트 상속 → 일관성 */
+}
+
+/* 시각 디버깅용 보더 */
+.debug { outline: 1px dashed #aaa; }
+
+/* 완전 숨김(레이아웃 제외) vs 시각만 숨김(접근성 유지) */
+.hidden { display: none !important; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+
+/* =======================
+  [1] Display & 흐름
+  - inline 은 width/height/top/bottom margin 무시 (좌우 마진만 반영)
+  - inline-block 은 인라인 흐름 + 크기 지정 가능 (단, HTML 공백이 간격으로 보임)
+  - contents 는 자기 박스 제거 → 접근성/상속/포지셔닝 주의
+======================= */
+.d-block { display: block; }
+.d-inline { display: inline; }
+.d-inline-block { display: inline-block; }
+.d-contents { display: contents; }
+.d-flex { display: flex; }
+.d-grid { display: grid; }
+
+/* flow-root: 새 BFC(Block Formatting Context) 생성
+   - 효과: 자식 float 감싸짐, 부모-자식 수직 margin 결합 방지
+*/
+.flow-root { display: flow-root; }
+
+
+/* =======================
+  [2] Flexbox 조합 총정리
+  핵심 개념:
+  - 메인축/교차축: flex-direction 이 결정 (row=가로/세로, column=세로/가로)
+  - justify-* 는 "메인축" 정렬, align-* 는 "교차축" 정렬
+  - gap 은 형제 사이 간격만, 바깥 공간은 margin 사용
+======================= */
+
+/* 방향(축) */
+.flex-row      { display: flex; flex-direction: row; }          /* 메인축=가로 */
+.flex-row-rev  { display: flex; flex-direction: row-reverse; }
+.flex-col      { display: flex; flex-direction: column; }       /* 메인축=세로 */
+.flex-col-rev  { display: flex; flex-direction: column-reverse; }
+
+/* 줄바꿈: wrap 을 켜야 여러 줄 배치 가능. align-content 는 여러 줄일 때만 의미 있음 */
+.flex-wrap   { flex-wrap: wrap; }
+.flex-nowrap { flex-wrap: nowrap; }
+
+/* 간격: gap 은 형제 사이만. 첫/마지막과 부모 사이 간격은 margin 으로 */
+.gap-4 { gap: 4px; } .gap-8 { gap: 8px; } .gap-12 { gap: 12px; } .gap-16 { gap: 16px; }
+
+/* 메인축 정렬 (row=가로, column=세로) */
+.justify-start    { justify-content: flex-start; }
+.justify-center   { justify-content: center; }
+.justify-end      { justify-content: flex-end; }
+.justify-between  { justify-content: space-between; } /* 양 끝 붙고 중간 균등 */
+.justify-around   { justify-content: space-around; }  /* 양끝 여백 포함 균등 */
+.justify-evenly   { justify-content: space-evenly; }  /* 모든 간격 동일 */
+
+/* 교차축 정렬 (row=세로, column=가로) */
+.items-start   { align-items: flex-start; }
+.items-center  { align-items: center; }
+.items-end     { align-items: flex-end; }
+.items-stretch { align-items: stretch; }   /* 자식에 고정 height 없을 때 늘어남 */
+.items-base    { align-items: baseline; }  /* 텍스트 베이스라인 기준 */
+
+/* 여러 줄 정렬(줄 묶음 정렬) : wrap 일 때만 효과; 한 줄이면 효과 없음 */
+.content-start    { align-content: flex-start; }
+.content-center   { align-content: center; }
+.content-end      { align-content: flex-end; }
+.content-between  { align-content: space-between; }
+.content-around   { align-content: space-around; }
+.content-evenly   { align-content: space-evenly; }
+
+/* 아이템별 조정 (부모 align-items 와 무관하게 개별 적용) */
+.self-start   { align-self: flex-start; }
+.self-center  { align-self: center; }
+.self-end     { align-self: flex-end; }
+.self-stretch { align-self: stretch; }
+
+/* 공간 분배(남는 공간 나눠먹기)
+  - 동일 라인에서만 영향, auto/min/max-width 제약에 영향받음
+*/
+.flex-1    { flex: 1 1 0; }     /* 남는 공간 비례 확장 + 축소 허용 */
+.flex-auto { flex: 1 1 auto; }
+.flex-none { flex: 0 0 auto; }  /* 고정형 */
+
+/* 레시피: 수평/수직 가운데 맞춤(컨테이너 자체 높이 필요) */
+.center-both { display: flex; justify-content: center; align-items: center; }
+
+/* 레시피: 가로 스택(아이콘+텍스트 등), 세로 스택 */
+.hstack { display: flex; align-items: center; gap: 8px; }
+.vstack { display: flex; flex-direction: column; gap: 8px; }
+
+/* 레시피: 양끝 정렬(로고-네비) */
+.spread { display: flex; justify-content: space-between; align-items: center; }
+
+/* 흔한 오해/함정:
+   - display:block + justify-content 는 "아무 효과 없음" (flex/grid 컨테이너에서만 작동)
+   - column 으로 바꾸면 justify/align 축이 '역전'됨 → 원하는 축이 맞는지 항상 점검
+   - align-items:stretch 는 자식이 높이 지정되어 있으면 안 늘어남
+*/
+
+
+/* =======================
+  [3] CSS Grid 조합 총정리
+  핵심 개념:
+  - grid-template-columns/rows 로 트랙(열/행) 정의
+  - place-items 는 셀 내부 정렬(align-items + justify-items)
+  - place-content 는 전체 그리드 영역 내 정렬(align-content + justify-content)
+======================= */
+
+/* 기본 2/3/4열 */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+/* 반응형 카드: 최소 200px 확보, 가능하면 자동으로 더 많은 칼럼 생성 */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* auto-fit vs auto-fill 차이: fit은 남는 칼럼을 접음 */
+  gap: 16px;
+}
+
+/* 셀 내부 정렬/트랙 묶음 정렬 */
+.place-items-center  { place-items: center; }   /* 각 셀 내부 가로/세로 중앙 */
+.place-content-center{ place-content: center; } /* 그리드 전체 영역 기준 중앙 */
+
+/* 특정 아이템 개별 정렬 (셀 내 위치만) */
+.place-self-end { place-self: end; }
+
+/* 함정:
+   - justify-items/align-items 는 "셀 내부 콘텐츠" 정렬
+   - justify-content/align-content 는 "그리드 전체"를 부모 안에서 정렬 (트랙 여유 공간이 있어야 체감)
+*/
+
+
+/* =======================
+  [4] Box Model / Spacing / 크기 계산
+  - border-box 권장(계산 예측 가능)
+  - min/max-* 는 강제 상한/하한 → 오버플로우/깨짐 방지
+======================= */
+.w-100 { width: 100%; }
+.h-100 { height: 100%; }
+
+.minw-200 { min-width: 200px; }
+.minh-100 { min-height: 100px; }
+.maxw-1200 { max-width: 1200px; }
+.maxh-400  { max-height: 400px; }
+
+.m-0 { margin: 0; }
+.mt-8 { margin-top: 8px; } .mb-8 { margin-bottom: 8px; }
+.ml-8 { margin-left: 8px; } .mr-8 { margin-right: 8px; }
+
+.p-0 { padding: 0; }
+.p-8 { padding: 8px; } .p-12 { padding: 12px; } .p-16 { padding: 16px; }
+
+/* 수직 margin 결합(Margin Collapsing) 방지:
+   - 부모에 padding-top/border-top/overflow:hidden/auto/clip 또는 flow-root 사용
+*/
+.bfc { overflow: auto; }     /* 새 BFC 생성 */
+
+
+/* =======================
+  [5] Overflow / Scroll
+  - overflow 는 스크롤 생성/잘림 방식을 제어
+  - 스크롤 영역 만들 때는 max-height/height 와 함께 사용
+======================= */
+.overflow-auto   { overflow: auto; }
+.overflow-hidden { overflow: hidden; }
+.overflow-scroll { overflow: scroll; }
+.overflow-x-auto { overflow-x: auto; }
+.overflow-y-auto { overflow-y: auto; }
+
+.scroll-box { max-height: 300px; overflow: auto; } /* 내부만 스크롤 */
+
+
+/* =======================
+  [6] Positioning / Sticky / Center
+  - absolute 기준은 "가장 가까운 position:relative/absolute/fixed/sticky 조상"
+  - sticky 는 스크롤 컨테이너와 overflow 영향 받음 (부모에 overflow:hidden 이면 붙지 않을 수 있음)
+======================= */
+.pos-rel { position: relative; }
+.pos-abs { position: absolute; }
+.pos-fix { position: fixed; }
+.pos-sticky { position: sticky; }
+
+/* 절대 위치: 부모(.pos-rel) 기준 */
+.abs-tr { position: absolute; top: 0; right: 0; }
+.abs-br { position: absolute; bottom: 0; right: 0; }
+
+/* 정확 중앙 정렬(절대 배치 + 변환) */
+.abs-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); /* transform 은 stacking context 생성 주의(아래 참고) */
+}
+
+/* sticky 헤더/푸터 */
+.sticky-top { position: sticky; top: 0; z-index: 10; }
+.sticky-bottom { position: sticky; bottom: 0; z-index: 10; }
+
+/* 고정(뷰포트 기준) 버튼 */
+.fab { position: fixed; bottom: 24px; right: 24px; }
+
+/* Z축: stacking context(쌓임 맥락)과 함께 이해해야 기대한 순서로 뜬다 */
+.z-1 { z-index: 1; } .z-10 { z-index: 10; } .z-100 { z-index: 100; }
+
+/* 함정:
+   - z-index 는 같은 stacking context 안에서만 비교 의미가 있음.
+   - transform/opacity/filter/isolation/position:fixed 등은 새로운 stacking context 생성 → z-index 우선순위가 달라짐.
+*/
+
+
+/* =======================
+  [7] Stacking Context / 레이어 이해
+  - 아래 조건 중 하나라도 만족하면 "새로운 stacking context" 생성:
+    1) position: fixed
+    2) transform / perspective / filter / backdrop-filter / will-change 등 적용
+    3) opacity < 1
+    4) mix-blend-mode != normal
+    5) isolation: isolate
+    6) z-index 가 지정된 position 요소(특수 케이스)
+  - 결과: 서로 다른 컨텍스트끼리는 z-index 비교가 안 맞아 보일 수 있음 → 상위 컨텍스트에서 제어 필요
+======================= */
+.layer { position: relative; z-index: 1; }
+.layer-transform { transform: translateZ(0); } /* 성능 최적화 + 새 컨텍스트 생성 주의 */
+.isolate { isolation: isolate; }               /* 독립 레이어로 만들어 충돌 회피 */
+
+
+/* =======================
+  [8] Typography / 단위 / 줄바꿈
+  - rem: root(html)의 font-size 기준(기본 16px). 반응형에서 선호.
+  - em: "현재 요소"의 font-size 기준. 중첩 시 누적됨(주의).
+  - clamp(min, preferred, max): 반응형 폰트/사이즈에 유용.
+======================= */
+.fs-12 { font-size: 12px; }
+.fs-14 { font-size: 14px; }
+.fs-16 { font-size: 16px; }
+.fs-18 { font-size: 18px; }
+.fs-20 { font-size: 20px; }
+
+.lh-1  { line-height: 1; }
+.lh-12 { line-height: 1.2; }
+.lh-15 { line-height: 1.5; }
+
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.bold { font-weight: 700; }
+.normal { font-weight: 400; }
+.light { font-weight: 300; }
+
+.nowrap { white-space: nowrap; }
+.ellipsis-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ellipsis-2 { 
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 한국어 줄바꿈 품질 향상:
+   - keep-all: 단어(어절) 단위 줄바꿈, 긴 영문에는 불리할 수 있음
+   - break-all: 아무 데서나 줄바꿈 → 레이아웃 보호, 가독성 악화
+*/
+.keep-all { word-break: keep-all; }
+.break-all { word-break: break-all; }
+
+/* 반응형 폰트 예시: clamp(최소, 선호값, 최대) */
+.fs-fluid { font-size: clamp(14px, 1.2vw + 0.5rem, 22px); }
+
+
+/* =======================
+  [9] 배경 / 보더 / 그림자 / 트랜지션
+======================= */
+.bg-white { background: #fff; }
+.bg-gray  { background: #f5f5f5; }
+
+.border { border: 1px solid #ddd; }
+.rounded { border-radius: 6px; }
+.rounded-12 { border-radius: 12px; }
+
+.shadow-s { box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.shadow-m { box-shadow: 0 4px 12px rgba(0,0,0,.16); }
+
+/* transition 은 애니메이션이 아니라 "상태 변화"의 부드러운 전환 */
+.transition { transition: all .2s ease; }
+.scale-hover:hover { transform: scale(1.03); }
+.rotate-5 { transform: rotate(5deg); }
+
+
+/* =======================
+  [10] 이미지 / 미디어 / 비율
+======================= */
+/* 반응형 이미지: 컨테이너 폭 내에서 축소, 비율 유지 */
+.img-fluid { max-width: 100%; height: auto; }
+
+/* 배경 이미지: cover 는 채우되 잘림, contain 은 모두 보이되 여백 가능 */
+.bg-cover  { background-size: cover; background-position: center; background-repeat: no-repeat; }
+.bg-contain{ background-size: contain; background-position: center; background-repeat: no-repeat; }
+
+/* 고정 비율 박스: 현대적 방법(aspect-ratio) */
+.ratio-16x9 { aspect-ratio: 16 / 9; }
+.ratio-1x1  { aspect-ratio: 1 / 1; }
+
+/* 구형 브라우저 대응 시: 패딩-트릭 필요(여기서는 생략) */
+
+
+/* =======================
+  [11] 폼 / 버튼 레이아웃
+  - 인라인 컨트롤의 베이스라인 불일치 → flex 정렬로 해결
+======================= */
+.form-row   { display: flex; align-items: center; gap: 8px; }
+.form-inline{ display: inline-flex; align-items: center; gap: 6px; }
+
+/* 클릭 가능한 영역 확대(접근성) */
+.click-area { padding: 8px 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+
+
+/* =======================
+  [12] 반응형(미디어쿼리) / 컨테이너 패턴
+  - 브레이크포인트는 제품/디자인에 맞게 조정
+  - display:none 은 접근성/SEO 영향 → 필요 시 sr-only 또는 aria-속성 고려
+======================= */
+@media (max-width: 1200px) { .lg-hide { display: none !important; } }
+@media (max-width: 992px)  { .md-hide { display: none !important; } }
+@media (max-width: 768px)  { .sm-hide { display: none !important; } }
+
+/* 반응형 레이아웃 예시: 데스크탑 2열 → 모바일 1열 */
+.resp-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+@media (max-width: 768px) {
+  .resp-grid { grid-template-columns: 1fr; }
+}
+
+/* 컨테이너 폭 제한 + 중앙 정렬(가장 흔한 패턴) */
+.container {
+  max-width: 1200px; margin-left: auto; margin-right: auto; padding: 0 16px;
+}
+
+
+/* =======================
+  [13] 실전 레이아웃 레시피 모음
+======================= */
+/* (1) 헤더: 좌측 로고, 우측 메뉴(양끝 정렬) */
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  min-height: 56px; padding: 0 16px;
+}
+
+/* (2) 메인 레이아웃: 사이드바 + 콘텐츠 */
+.app {
+  display: grid; grid-template-columns: 240px 1fr; min-height: 100vh;
+}
+.sidebar { border-right: 1px solid #eee; }
+.content { padding: 16px; }
+
+/* (3) 카드 리스트: auto-fit + minmax 로 반응형 */
+.cards {
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* (4) 고정 높이 박스 중앙 정렬 */
+.center-box {
+  height: 240px; display: flex; align-items: center; justify-content: center;
+}
+
+/* (5) 포지셔닝 오버레이(모달/토스트 베이스) */
+.overlay {
+  position: fixed; inset: 0;            /* top:0;right:0;bottom:0;left:0; */
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.4);
+}
+
+
+/* =======================
+  [14] 흔한 함정 정리(주석)
+  - display:block + justify-content → 작동 안 함 (flex/grid 에서만)
+  - flex-direction 변경 시 justify/align 축 "역전" 주의
+  - flex:1 은 같은 "라인"에서만 남는 공간 분배 (wrap 넘어가면 다른 줄과 무관)
+  - gap 은 형제사이 간격만 (컨테이너 바깥 여백은 margin)
+  - align-items:stretch 는 자식에 height/border/padding 제약이 있으면 기대와 다르게 동작
+  - inline 요소는 width/height/top/bottom margin 적용 안 됨 → inline-block/flex/grid 사용
+  - margin collapsing(수직 마진 결합) 으로 예상과 다르게 여백 합쳐짐 → flow-root/overflow/padding 으로 차단
+  - sticky 는 스크롤 컨테이너/overflow 에 막히기 쉬움 → 상위 요소 overflow 확인
+  - z-index 가 먹히지 않으면 "stacking context" 생성 여부 점검(transform/opacity 등)
+  - object-fit 은 <img> 보다는 background-size 와 개념이 다름(컨텐츠 박스에 맞추는 이미지 자체의 렌더링)
+======================= */
+
+
+/* =======================================================================
+  [A] 테이블 스티키 헤더/컬럼
+  - 긴 표에서 헤더는 상단 고정, 첫 열은 좌측 고정
+  - 부모 스크롤 컨테이너가 필요(overflow)
+======================================================================= */
+.table-wrap {
+  max-height: 420px;              /* 스크롤 영역 높이 */
+  overflow: auto;                 /* 내부 스크롤 생성 */
+  position: relative;             /* 스티키 기준 컨텍스트 */
+}
+.table {
+  border-collapse: separate;      /* sticky와 조합 안정성 ↑ */
+  border-spacing: 0;
+  width: 100%;
+}
+.table th, .table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  background: #fff;               /* sticky 시 밑 컨텐츠 비침 방지 */
+}
+.table thead th {
+  position: sticky; top: 0;       /* 헤더 고정 */
+  z-index: 2;                     /* 본문 셀 위로 */
+  box-shadow: 0 2px 0 rgba(0,0,0,.04);
+}
+.table .sticky-col {
+  position: sticky; left: 0;      /* 첫 열 고정 */
+  z-index: 1;                     /* 헤더보다 낮게, 본문보단 높게 */
+  background: #fff;
+}
+.table thead th.sticky-col {
+  z-index: 3;                     /* 헤더+첫열 교차 셀은 최상위 */
+}
+
+/* =======================================================================
+  [B] Scroll Snap (수평/수직 스냅)
+  - 카드 캐러셀/슬라이더 UX에 유용
+  - snap-type: 축과 방식(mandatory/proximity)
+======================================================================= */
+.snap-x {
+  display: flex; gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;  /* x축 스냅, 근접 시 스냅 */
+  scroll-padding: 16px;           /* 첫/마지막 아이템 여백 고려 */
+}
+.snap-item {
+  flex: 0 0 auto;                 /* 줄 바꿈 방지 */
+  scroll-snap-align: start;       /* 시작지점에서 스냅 */
+  min-width: 220px;
+}
+
+/* =======================================================================
+  [C] 드래그/선택 제어 (이미지 드래그 방지, 텍스트 선택 방지)
+======================================================================= */
+.no-drag {
+  -webkit-user-drag: none; user-select: none;
+}
+.no-select { user-select: none; }
+.select-text { user-select: text; } /* 선택 허용 복원 */
+
+/* =======================================================================
+  [D] Skeleton 로딩 (반짝이는 스켈레톤)
+  - 배경 그라디언트를 이동시키는 애니메이션
+======================================================================= */
+.skeleton {
+  position: relative;
+  background: #eee;
+  overflow: hidden;
+}
+.skeleton::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.6), rgba(255,255,255,0));
+  transform: translateX(-100%);
+  animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* =======================================================================
+  [E] 포커스 링 접근성 (키보드 탭 시만 표시)
+  - :focus-visible: 키보드 탐색에 반응, 마우스 클릭에는 보통 미표시
+======================================================================= */
+.focusable { outline: none; }
+.focusable:focus-visible {
+  outline: 2px solid #3b82f6; outline-offset: 2px; /* 파란 포커스 링 */
+}
+
+/* =======================================================================
+  [F] 버튼/링크 리셋 + 인터랙션
+======================================================================= */
+.btn-reset {
+  -webkit-appearance: none; appearance: none;
+  border: 0; background: none; padding: 0; margin: 0;
+  font: inherit; color: inherit;
+}
+.link-reset {
+  color: inherit; text-decoration: none;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd;
+  background: #fff; cursor: pointer; transition: box-shadow .2s, transform .05s;
+}
+.btn:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.btn:active { transform: translateY(1px); }
+
+/* =======================================================================
+  [G] 스크롤바 스타일 (WebKit 전용, 선택 적용)
+======================================================================= */
+.scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+.scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,.25); border-radius: 8px;
+}
+.scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+/* =======================================================================
+  [H] 텍스트 줄수 제한(멀티라인 클램프) & 하이라이트
+======================================================================= */
+.clamp-2 {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mark {
+  background: linear-gradient(transparent 65%, #ffeb99 0);
+}
+
+/* =======================================================================
+  [I] 아이콘/화살표(순수 CSS) - caret/triangle
+======================================================================= */
+.caret-right {
+  width: 0; height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid currentColor;  /* 글자색 상속 */
+}
+.caret-down {
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid currentColor;
+}
+
+/* =======================================================================
+  [J] 다크 모드(시스템 선호도) + 토글 가능 구조
+  - prefers-color-scheme로 기본 테마
+  - data-theme 속성으로 앱 내 토글
+======================================================================= */
+:root {
+  --bg: #ffffff; --fg: #111111;
+  --muted: #666; --card: #ffffff; --border: #e6e6e6;
+  --primary: #2563eb; --primary-contrast: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b0c; --fg: #e7e7ea;
+    --muted: #9aa; --card: #141416; --border: #27272a;
+    --primary: #60a5fa; --primary-contrast: #0b0b0c;
+  }
+}
+/* 앱 레벨 토글: <html data-theme="dark">… */
+:root[data-theme="dark"] {
+  --bg: #0b0b0c; --fg: #e7e7ea;
+  --muted: #9aa; --card: #141416; --border: #27272a;
+  --primary: #60a5fa; --primary-contrast: #0b0b0c;
+}
+.theme-bg { background: var(--bg); color: var(--fg); }
+.theme-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+}
+.btn-primary {
+  background: var(--primary); color: var(--primary-contrast); border: 1px solid transparent;
+}
+.btn-primary:hover { filter: brightness(1.05); }
+
+/* =======================================================================
+  [K] Holy Grail Layout (헤더/푸터 + 사이드바 + 콘텐츠)
+======================================================================= */
+.app-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;   /* header / main / footer */
+}
+.app-header { grid-row: 1; }
+.app-main {
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 240px 1fr;     /* sidebar / content */
+}
+.app-footer { grid-row: 3; }
+@media (max-width: 960px) {
+  .app-main { grid-template-columns: 1fr; }   /* 모바일: 사이드바 위로 스택 */
+}
+
+/* =======================================================================
+  [L] 카드/리스트 반응형 그리드 (auto-fit + minmax)
+======================================================================= */
+.cards {
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.card {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #eee);
+  border-radius: 12px; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+/* =======================================================================
+  [M] 고급 포지셔닝 패턴 (앱 바 + 안전패딩, 바텀시트)
+======================================================================= */
+.appbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg, #fff);
+  border-bottom: 1px solid var(--border, #eee);
+  padding: env(safe-area-inset-top) 16px 8px 16px; /* 노치 대응 */
+}
+.bottom-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: var(--card, #fff); border-top-left-radius: 16px; border-top-right-radius: 16px;
+  box-shadow: 0 -8px 24px rgba(0,0,0,.2);
+  max-height: 75vh; overflow: auto; padding: 12px 16px;
+}
+
+/* =======================================================================
+  [N] 유동 컨테이너/중앙 정렬/폭 제한 (공통 패턴)
+======================================================================= */
+.container {
+  width: min(1200px, 100%);      /* 1200px 이하에서만 줄어듦 */
+  margin-inline: auto;           /* 좌우 중앙 */
+  padding-inline: 16px;          /* 좌우 패딩 */
+}
+.center-both { display: flex; align-items: center; justify-content: center; }
+
+/* =======================================================================
+  [O] 애니메이션 유틸 (페이드, 슬라이드, 스케일)
+======================================================================= */
+.fade-in { animation: fade-in .2s ease both; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.slide-up { animation: slide-up .25s ease both; }
+@keyframes slide-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+.scale-in { animation: scale-in .15s ease both; }
+@keyframes scale-in {
+  from { transform: scale(.96); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* =======================================================================
+  [P] 이미지/미디어 적응형 채우기 (object-fit)
+======================================================================= */
+.fit-cover { width: 100%; height: 100%; object-fit: cover; }
+.fit-contain { width: 100%; height: 100%; object-fit: contain; }
+
+/* =======================================================================
+  [Q] 테이블 행 고정 높이 + 세로 중앙정렬 (라인 고정)
+======================================================================= */
+.table-fixed {
+  table-layout: fixed; width: 100%;
+}
+.table-fixed th, .table-fixed td {
+  height: 44px;
+  vertical-align: middle;         /* 셀 내부 수직 중앙 */
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* =======================================================================
+  [R] 토글 스위치 (순수 CSS, 접근성은 input + label 조합 권장)
+======================================================================= */
+.switch {
+  position: relative; width: 44px; height: 24px; border-radius: 999px;
+  background: #ddd; transition: background .2s;
+}
+.switch::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  transition: transform .2s;
+}
+.switch.on { background: #22c55e; }
+.switch.on::after { transform: translateX(20px); }
+
+/* =======================================================================
+  [S] 드래그 가능 영역/불가 영역 (웹앱 헤더 등)
+======================================================================= */
+.drag-region {
+  -webkit-app-region: drag;       /* 데스크톱 앱(WebView)에서 창 끌기 */
+  user-select: none;
+}
+.no-drag-region { -webkit-app-region: no-drag; }
+
+/* =======================================================================
+  [T] 헷갈리기 쉬운 정렬 조합(주석 요약)
+  - row vs column 에서 justify/align 축 "역전" 확인 필수
+  - space-between 은 메인축 간격 균등 (세로 균등 원하면 column + justify-between)
+  - gap 은 형제 사이만, 컨테이너 가장자리 간격은 margin/padding
+  - align-items:stretch 는 자식 height 지정되면 동작 제한
+  - inline 요소는 width/height/top/bottom margin 무효 → inline-block/flex/grid 사용
+  - sticky 가 안 먹으면 상위 overflow 확인(overflow:hidden/auto가 방해)
+  - z-index 문제는 stacking context(변환/투명도/고정포지션 등) 생성 여부 점검
+======================================================================= */
+
+
+/* =======================================================================
+  [U] 사이드바 접힘/펼침 레이아웃 (순수 CSS, data-state 사용)
+  - .layout: 전체 레이아웃 그리드
+  - [data-state="collapsed"] 일 때 사이드바 폭을 축소
+======================================================================= */
+.layout {
+  display: grid; grid-template-columns: 240px 1fr; min-height: 100vh;
+  transition: grid-template-columns .2s ease;
+}
+.layout[data-state="collapsed"] { grid-template-columns: 72px 1fr; }
+.sidebar {
+  border-right: 1px solid var(--border, #eee);
+  padding: 12px; overflow: auto;
+}
+.sidebar .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.layout[data-state="collapsed"] .sidebar .label { opacity: .0; pointer-events: none; }
+.main { padding: 16px; }
+
+/* 아이콘 버튼 영역 고정 폭(접힘 상태 시만 보이게) */
+.sidebar .icon { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; }
+
+/* =======================================================================
+  [V] 테이블 고정 합계 행/열 + 가로 스크롤
+  - 하단 합계 행 sticky, 마지막 합계 열 sticky
+======================================================================= */
+.table-scroll {
+  overflow: auto; max-height: 520px; position: relative;
+  border: 1px solid var(--border, #eee); border-radius: 8px;
+}
+.table-metrics { border-collapse: separate; border-spacing: 0; width: max(100%, 960px); }
+.table-metrics th, .table-metrics td { padding: 8px 12px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+.table-metrics thead th { position: sticky; top: 0; z-index: 2; background: #fafafa; }
+.table-metrics tfoot td {
+  position: sticky; bottom: 0; z-index: 2; background: #fafafa; font-weight: 700;
+  box-shadow: 0 -2px 0 rgba(0,0,0,.04);
+}
+.table-metrics .sum-col { position: sticky; right: 0; z-index: 1; background: #fff; box-shadow: -2px 0 0 rgba(0,0,0,.04); }
+.table-metrics tfoot .sum-col { z-index: 3; } /* 교차셀 우선 */
+
+/* =======================================================================
+  [W] 내비게이션 바(데스크탑/모바일) + 드롭다운
+  - .nav 는 flex, 모바일에서는 감춤/토글을 가정 (JS 토글 클래스만 붙이면 됨)
+======================================================================= */
+.navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 56px; padding: 0 16px; border-bottom: 1px solid var(--border, #eee);
+  background: var(--card, #fff);
+}
+.nav { display: flex; align-items: center; gap: 12px; }
+.nav .item { position: relative; }
+.nav .link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 8px; }
+.nav .link:hover { background: rgba(0,0,0,.04); }
+
+/* 드롭다운: hover/포커스 접근성 */
+.dropdown { position: absolute; top: 100%; left: 0; min-width: 200px; background: var(--card, #fff);
+  border: 1px solid var(--border, #eee); border-radius: 10px; padding: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  opacity: 0; visibility: hidden; transform: translateY(8px); transition: .15s ease;
+}
+.item:focus-within .dropdown, .item:hover .dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+
+/* 모바일 내비(예시) */
+.nav-toggle { display: none; }
+@media (max-width: 768px) {
+  .nav { display: none; }
+  .navbar[data-open="true"] .nav { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 0; }
+  .nav-toggle { display: inline-flex; }
+}
+
+/* =======================================================================
+  [X] 모달/다이얼로그(오버레이) - 키보드 포커스 링 포함
+======================================================================= */
+.modal-overlay {
+  position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.45); z-index: 1000;
+}
+.modal-overlay[data-open="true"] { display: flex; }
+.modal {
+  width: min(560px, 92vw); background: var(--card, #fff); color: var(--fg, #111);
+  border: 1px solid var(--border, #eee); border-radius: 12px; padding: 16px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.28); outline: none;
+}
+.modal:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+
+/* =======================================================================
+  [Y] 툴팁 (순수 CSS, 접근성: 포커스/호버 둘 다)
+======================================================================= */
+.tooltip { position: relative; }
+.tooltip .tip {
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); white-space: nowrap;
+  background: #111; color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 12px;
+  opacity: 0; visibility: hidden; transition: .15s ease; pointer-events: none;
+}
+.tooltip .tip::after {
+  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: #111;
+}
+.tooltip:focus-within .tip, .tooltip:hover .tip { opacity: 1; visibility: visible; }
+
+/* =======================================================================
+  [Z] 아코디언(세부/요약) details/summary 스타일
+======================================================================= */
+.accordion { border: 1px solid var(--border, #eee); border-radius: 10px; overflow: hidden; }
+.accordion details + details { border-top: 1px solid var(--border, #eee); }
+.accordion summary {
+  list-style: none; cursor: pointer; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;
+}
+.accordion summary::-webkit-details-marker { display: none; }
+.accordion .content { padding: 12px 14px; border-top: 1px dashed #eee; }
+.accordion details[open] summary { background: rgba(0,0,0,.03); }
+
+/* =======================================================================
+  [AA] 브레드크럼/페이지네이션/탭 UI
+======================================================================= */
+/* 브레드크럼 */
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted, #667085); }
+.breadcrumb .current { color: var(--fg, #111); font-weight: 600; }
+
+/* 페이지네이션 */
+.pagination { display: inline-flex; align-items: center; gap: 6px; }
+.page {
+  min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--border, #e5e7eb);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; background: #fff; transition: .15s;
+}
+.page:hover { background: #f8fafc; }
+.page[aria-current="page"] { background: #111; color: #fff; border-color: #111; }
+
+/* 탭 */
+.tabs { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border, #eee); }
+.tab {
+  padding: 10px 12px; border-radius: 8px 8px 0 0; background: transparent; cursor: pointer; color: var(--muted, #667085);
+}
+.tab[aria-selected="true"] { color: var(--fg, #111); background: #fff; border: 1px solid var(--border, #eee); border-bottom-color: #fff; }
+
+/* =======================================================================
+  [AB] 테이블 Zebra/hover/선택 상태
+======================================================================= */
+.table-ui { width: 100%; border-collapse: collapse; }
+.table-ui th, .table-ui td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+.table-ui tbody tr:nth-child(odd) { background: #fafafa; }     /* zebra */
+.table-ui tbody tr:hover { background: #f5f7fb; }              /* hover */
+.table-ui tr[aria-selected="true"] { background: #e6f0ff; }    /* 선택 */
+
+/* =======================================================================
+  [AC] 동일 높이 카드(컬럼) 만들기: flex + stretch
+======================================================================= */
+.equal-cards { display: flex; align-items: stretch; gap: 12px; }
+.equal-cards > .card { flex: 1; display: flex; flex-direction: column; }
+.equal-cards > .card .grow { flex: 1; } /* 내용부 확장 */
+
+/* =======================================================================
+  [AD] 가상 Masonry 레이아웃 (column-count 사용, 고정 폭 카드)
+  - 높이가 제각각인 카드들을 “물 흐르듯” 수직으로 배치
+======================================================================= */
+.masonry {
+  column-count: 3; column-gap: 16px;  /* 브레이크포인트에 맞춰 조절 */
+}
+.masonry-item {
+  break-inside: avoid; margin-bottom: 16px; display: block;
+}
+@media (max-width: 960px) { .masonry { column-count: 2; } }
+@media (max-width: 600px) { .masonry { column-count: 1; } }
+
+/* =======================================================================
+  [AE] CSS 변수 시스템(색/간격/라운드/셰도우) + 유틸
+======================================================================= */
+:root {
+  --space-0: 0;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
+  --radius-1: 6px; --radius-2: 10px; --radius-3: 16px;
+  --shadow-1: 0 1px 3px rgba(0,0,0,.12);
+  --shadow-2: 0 8px 24px rgba(0,0,0,.12);
+  --c-bg: #ffffff; --c-fg: #111111; --c-muted: #667085;
+  --c-border: #e6e6e6; --c-card: #ffffff; --c-primary: #2563eb; --c-danger: #ef4444; --c-success: #22c55e;
+}
+.space-1 { margin: var(--space-1); } .p-space-4 { padding: var(--space-4); }
+.round-1 { border-radius: var(--radius-1); } .round-2 { border-radius: var(--radius-2); }
+.shadow-1 { box-shadow: var(--shadow-1); } .shadow-2 { box-shadow: var(--shadow-2); }
+.bg-card { background: var(--c-card); } .bordered { border: 1px solid var(--c-border); }
+.text-muted { color: var(--c-muted); }
+
+/* =======================================================================
+  [AF] 컨테이너 쿼리(지원 브라우저에서만) - @container
+  - 부모 박스 폭에 따라 자식 스타일 변화 (반응형을 컴포넌트 단위로)
+======================================================================= */
+/* 컨테이너 선언 */
+.card-cq { container-type: inline-size; }
+.card-cq .title { font-size: 16px; }
+@container (min-width: 480px) {
+  .card-cq .title { font-size: 20px; }
+}
+
+/* =======================================================================
+  [AG] 트랜지션/트랜스폼 유틸 + 포인터/이벤트 제어
+======================================================================= */
+.transition { transition: all .2s ease; }
+.ease-out { transition-timing-function: cubic-bezier(.22,1,.36,1); }
+.t-origin-top { transform-origin: top center; }
+.no-pointer { pointer-events: none; }
+.pointer { cursor: pointer; }
+
+/* =======================================================================
+  [AH] 프린트 스타일 (필요 영역만 인쇄)
+======================================================================= */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: #fff; color: #000; }
+  a { color: #000; text-decoration: underline; }
+  .container { max-width: none; padding: 0; }
+}
+
+/* =======================================================================
+  [AI] 상태 색상/배지/알림 토스트
+======================================================================= */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 8px; border-radius: 999px; font-size: 12px;
+  border: 1px solid var(--c-border);
+}
+.badge.primary  { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.badge.success  { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+.badge.danger   { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+.toast {
+  position: fixed; right: 16px; bottom: 16px; min-width: 240px; z-index: 2000;
+  background: var(--card, #fff); border: 1px solid var(--border, #eee); border-radius: 12px; padding: 10px 12px;
+  box-shadow: 0 16px 36px rgba(0,0,0,.18); animation: slide-up .25s ease both;
+}
+
+/* =======================================================================
+  [AJ] 키보드 접근성: 포커스 트랩 영역 시각화 도우미
+======================================================================= */
+.focus-ring { outline: 2px solid #3b82f6; outline-offset: 2px; }
+.kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; padding: 2px 6px; border: 1px solid #ddd; border-bottom-width: 2px; border-radius: 6px; }
+
+/* =======================================================================
+  [AK] 유틸 모음(가시성/투명/회전/스케일/흐림)
+======================================================================= */
+.opacity-0 { opacity: 0; } .opacity-50 { opacity: .5; } .opacity-100 { opacity: 1; }
+.rotate-90 { transform: rotate(90deg); } .rotate-180 { transform: rotate(180deg); }
+.scale-95 { transform: scale(.95); } .scale-100 { transform: scale(1); } .blur-4 { filter: blur(4px); }
+
+/* =======================================================================
+  [AL] 데스크탑/모바일 전환 그리드 (좌측 고정 + 우측 유동)
+======================================================================= */
+.split {
+  display: grid; grid-template-columns: 360px 1fr; gap: 16px; min-height: 100vh;
+}
+@media (max-width: 1024px) {
+  .split { grid-template-columns: 1fr; }
+}
+
+/* =======================================================================
+  [AM] 프로그레스 바/스켈레톤 바(수평 진행)
+======================================================================= */
+.progress {
+  height: 8px; background: #eee; border-radius: 999px; overflow: hidden;
+}
+.progress .bar {
+  height: 100%; width: 0%; background: linear-gradient(90deg, #60a5fa, #2563eb);
+  transition: width .25s ease;
+}
+
+/* =======================================================================
+  [AN] 드롭존(파일 업로드 영역) - 호버 강조
+======================================================================= */
+.dropzone {
+  border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center;
+  background: #f8fafc; transition: border-color .2s, background .2s;
+}
+.dropzone:hover { border-color: #60a5fa; background: #f1f5f9; }
+.dropzone[data-active="true"] { border-color: #22c55e; background: #ecfdf5; }
+
+/* =======================================================================
+  [AO] 캘린더/그리드 셀 정렬(정사각형 셀, 가운데 배치)
+======================================================================= */
+.calendar {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+}
+.calendar .cell {
+  aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
+  border: 1px solid #eee; border-radius: 8px;
+}
+.calendar .cell[aria-selected="true"] { background: #111; color: #fff; border-color: #111; }
+
+/* =======================================================================
+  [AP] 리스트 정렬 핸들(드래그 핸들 아이콘 영역만 커서 변경)
+======================================================================= */
+.sortable { display: flex; align-items: center; gap: 8px; }
+.handle { cursor: grab; user-select: none; }
+.handle:active { cursor: grabbing; }
+
+/* =======================================================================
+  [AQ] 헤더+푸터 고정, 본문만 스크롤 (뷰포트 전체)
+======================================================================= */
+.viewport {
+  height: 100vh; display: grid; grid-template-rows: auto 1fr auto;
+}
+.viewport .scroll { overflow: auto; }
+
+/* =======================================================================
+  [AR] 입력 도움: placeholder 스타일, 비활성/에러 상태
+======================================================================= */
+.input {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding: 0 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff;
+}
+.input input, .input textarea { border: none; outline: none; width: 100%; background: transparent; }
+.input:focus-within { border-color: #60a5fa; box-shadow: 0 0 0 4px rgba(96,165,250,.2); }
+.input[aria-invalid="true"] { border-color: #ef4444; box-shadow: 0 0 0 4px rgba(239,68,68,.15); }
+.input[aria-disabled="true"] { opacity: .6; pointer-events: none; }
+
+/* =======================================================================
+  [AS] 안내 텍스트/알럿(정보/성공/위험/경고)
+======================================================================= */
+.alert {
+  display: grid; grid-template-columns: 20px 1fr; gap: 8px; align-items: start;
+  padding: 12px; border: 1px solid var(--border, #eee); border-radius: 10px; background: var(--card, #fff);
+}
+.alert.info    { border-color: #bfdbfe; background: #eff6ff; color: #1e40af; }
+.alert.success { border-color: #bbf7d0; background: #ecfdf5; color: #065f46; }
+.alert.warn    { border-color: #fde68a; background: #fffbeb; color: #92400e; }
+.alert.danger  { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+
+/* =======================================================================
+  [AT] 헷갈리기 쉬운 조합 총정리 (요약 주석)
+  - flex-direction 이 column 으로 바뀌면 justify=세로, align=가로 (축 역전)
+  - display:block 에서는 justify/align-* 동작 안 함 (flex/grid 필요)
+  - gap 은 형제 간격만 제어, 컨테이너 바깥은 margin/padding
+  - align-items:stretch 는 자식 고정 height 있으면 기대대로 안 늘어남
+  - sticky 는 부모 overflow 영향(숨김/auto)으로 무효화될 수 있음
+  - z-index 문제는 stacking context(변환/투명도/고정포지션 등) 생성 확인
+  - inline 요소는 width/height/top/bottom margin 미적용 → inline-block/flex/grid 사용
+  - container queries(@container)는 부모에 container-type 선언 필수
+======================================================================= */
+
+
+/* =======================================================================
+  [AU] 검색바/필터바 (좌측 입력, 우측 버튼/태그 정렬)
+  - 폼 컨트롤의 높이/정렬 차이를 flex로 해결
+======================================================================= */
+.filterbar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px; border: 1px solid var(--c-border, #e6e6e6); border-radius: 10px; background: var(--c-card, #fff);
+}
+.filterbar .group { display: inline-flex; align-items: center; gap: 6px; }
+.input-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding-inline: 12px; border: 1px solid #e5e7eb; border-radius: 999px; background: #fff;
+}
+.input-pill input { border: none; outline: none; background: transparent; width: 180px; }
+.tag {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0; font-size: 12px;
+}
+
+/* =======================================================================
+  [AV] 반응형 툴바: 좌측 정렬 + 우측 액션, 모바일에서 세로 스택
+======================================================================= */
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.toolbar .left, .toolbar .right { display: flex; align-items: center; gap: 8px; }
+@media (max-width: 768px) {
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar .right { align-self: stretch; justify-content: flex-end; }
+}
+
+/* =======================================================================
+  [AW] 데이터테이블: 헤더 정렬 + 정렬 아이콘 여유 공간 확보
+======================================================================= */
+.th { position: relative; padding-right: 20px; white-space: nowrap; }
+.th .sort {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  opacity: .6;
+}
+.th[aria-sort="ascending"] .sort::before  { content: "▲"; }
+.th[aria-sort="descending"] .sort::before { content: "▼"; }
+
+/* =======================================================================
+  [AX] 그룹 헤더(섹션 헤더 바) + 오른쪽 부수 액션
+======================================================================= */
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 2px; margin-bottom: 8px; border-bottom: 1px solid var(--c-border, #e6e6e6);
+}
+.section-head .title { font-weight: 700; }
+.section-head .actions { display: inline-flex; gap: 6px; }
+
+/* =======================================================================
+  [AY] 로컬 알림 바(상단 고정) - 네트워크/저장 상태 표시
+======================================================================= */
+.noticebar {
+  position: sticky; top: 0; z-index: 100;
+  display: none; align-items: center; gap: 8px;
+  padding: 8px 12px; border-bottom: 1px solid #e5e7eb;
+  background: #fffbeb; color: #92400e;
+}
+.noticebar[data-show="true"] { display: flex; }
+
+/* =======================================================================
+  [AZ] 키보드/모션 접근성 - 모션 줄이기, 투명/블러 줄이기
+======================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .overlay { background: rgba(0,0,0,.6); } /* 더 진하게 */
+}
+
+/* =======================================================================
+  [BA] 논리 속성 사용(국/영/RTL 대응 쉬움) - margin-inline/ padding-block
+  - 좌우 대신 inline, 상하 대신 block 사용 → 글자 흐름 방향 변화에 강함
+======================================================================= */
+.mi-auto { margin-inline: auto; }      /* 좌우 중앙 정렬 */
+.pi-16  { padding-inline: 16px; }      /* 좌우 패딩 */
+.pb-8   { padding-block: 8px; }        /* 상하 패딩 */
+.bi-1   { border-inline: 1px solid #e5e7eb; } /* 좌우 보더 */
+
+/* =======================================================================
+  [BB] RTL(오른쪽→왼쪽) 환경 대응 (아랍어/히브리어 등)
+  - dir="rtl"일 때 아이콘 방향/정렬 반전 등
+======================================================================= */
+[dir="rtl"] .caret-right {
+  border-left: none; border-right: 8px solid currentColor;
+  border-top: 6px solid transparent; border-bottom: 6px solid transparent;
+}
+[dir="rtl"] .mi-auto { margin-inline: auto; } /* 논리 속성은 자동 대응 */
+
+/* =======================================================================
+  [BC] 사이드 패널(오프캔버스) - 오른쪽 슬라이드
+======================================================================= */
+.offcanvas {
+  position: fixed; inset: 0; pointer-events: none; z-index: 1400;
+}
+.offcanvas .panel {
+  position: absolute; top: 0; right: 0; height: 100%; width: min(420px, 92vw);
+  background: var(--c-card, #fff); border-left: 1px solid var(--c-border, #e6e6e6);
+  transform: translateX(100%); transition: transform .2s ease; pointer-events: auto;
+  display: flex; flex-direction: column;
+}
+.offcanvas[data-open="true"] .panel { transform: translateX(0); }
+.offcanvas .backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,.45); opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.offcanvas[data-open="true"] .backdrop { opacity: 1; pointer-events: auto; }
+
+/* =======================================================================
+  [BD] Steps/Progress (수평 스텝 인디케이터)
+======================================================================= */
+.steps { display: grid; grid-auto-flow: column; gap: 12px; }
+.step {
+  position: relative; display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: center;
+}
+.step .dot {
+  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  background: #e5e7eb; color: #111;
+}
+.step[aria-current="step"] .dot { background: #2563eb; color: #fff; }
+.step:not(:last-child)::after {
+  content: ""; height: 2px; background: #e5e7eb; position: absolute; top: 50%; left: calc(24px + 8px); right: -12px; transform: translateY(-50%);
+}
+
+/* =======================================================================
+  [BE] 배지 카운터가 달린 아이콘 버튼
+======================================================================= */
+.icon-btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer;
+}
+.icon-btn:hover { background: #f8fafc; }
+.icon-btn .count {
+  position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px;
+  border-radius: 999px; background: #ef4444; color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+}
+
+/* =======================================================================
+  [BF] 토글 가능한 태그 그룹(선택/해제)
+======================================================================= */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px;
+  border: 1px solid #e5e7eb; background: #fff; cursor: pointer; transition: .15s;
+}
+.chip[aria-pressed="true"] { background: #111; color: #fff; border-color: #111; }
+
+/* =======================================================================
+  [BG] 카드 내 두 영역 균형 배치 (타이틀/액션, 설명/보조)
+======================================================================= */
+.card-row {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px;
+}
+.card-desc {
+  color: var(--c-muted, #667085); font-size: 14px;
+}
+
+/* =======================================================================
+  [BH] 경계선/분리자 & 점선, 텍스트 중간 구분선
+======================================================================= */
+.divider { border-top: 1px solid #e5e7eb; margin-block: 12px; }
+.dashed  { border-top: 1px dashed #d1d5db; margin-block: 12px; }
+.rule-text {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; color: #6b7280;
+}
+.rule-text::before, .rule-text::after { content: ""; border-top: 1px solid #e5e7eb; }
+
+/* =======================================================================
+  [BI] 검색 결과/하이라이트 & 빈 상태(Empty State)
+======================================================================= */
+.hl { background: linear-gradient(transparent 60%, #fff3bf 0); }
+.empty {
+  display: grid; place-items: center; gap: 8px; padding: 24px; color: #6b7280;
+}
+
+/* =======================================================================
+  [BJ] 드래그 가능한 테이블 열 리사이저(시각만, 동작은 JS 필요)
+======================================================================= */
+.col-resize { position: relative; }
+.col-resize::after {
+  content: ""; position: absolute; top: 0; right: 0; width: 6px; height: 100%; cursor: col-resize; opacity: 0; transition: .1s;
+}
+.col-resize:hover::after { background: rgba(0,0,0,.08); opacity: 1; }
+
+/* =======================================================================
+  [BK] 상단 고정 필터바 + 본문 스크롤 + 하단 합계 고정 (조합 패턴)
+======================================================================= */
+.sticky-filter { position: sticky; top: 0; z-index: 20; background: var(--c-card, #fff); padding: 8px 0; }
+.scroll-body { overflow: auto; }
+.sticky-summary { position: sticky; bottom: 0; z-index: 20; background: #fafafa; border-top: 1px solid #eee; padding: 8px; }
+
+/* =======================================================================
+  [BL] 접근성: 초점 이동 표시, 라이브 업데이트 배지
+======================================================================= */
+.focus-outline:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.live-badge {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #b91c1c;
+}
+.live-badge::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor;
+  box-shadow: 0 0 0 0 rgba(185,28,28,.5); animation: ping 1.2s infinite;
+}
+@keyframes ping {
+  70% { box-shadow: 0 0 0 8px rgba(185,28,28,0); }
+  100% { box-shadow: 0 0 0 0 rgba(185,28,28,0); }
+}
+
+/* =======================================================================
+  [BM] 카드 배너: 이미지 좌, 텍스트 우 / 모바일에서는 스택
+======================================================================= */
+.banner {
+  display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: center;
+  border: 1px solid #eee; border-radius: 12px; padding: 12px; background: #fff;
+}
+.banner .media { aspect-ratio: 16/9; overflow: hidden; border-radius: 10px; }
+.banner .media > img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 768px) {
+  .banner { grid-template-columns: 1fr; }
+}
+
+/* =======================================================================
+  [BN] 상태에 따른 행 강조 (성공/경고/에러 등 리스트 행)
+======================================================================= */
+.row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid #eee; }
+.row.ok    { background: #ecfdf5; }
+.row.warn  { background: #fffbeb; }
+.row.error { background: #fef2f2; }
+
+/* =======================================================================
+  [BO] 키보드 리스트 네비게이션 시 hover/active 스타일 분리
+======================================================================= */
+.list { border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+.list .item { padding: 10px 12px; }
+.list .item:hover { background: #f8fafc; }
+.list .item[aria-selected="true"] { background: #111; color: #fff; }
+
+/* =======================================================================
+  [BP] 코드를 감싸는 프리뷰 박스(스크롤/줄번호 느낌)
+======================================================================= */
+.codebox {
+  background: #0b1020; color: #e6edf3; border-radius: 12px; padding: 12px 14px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow: auto; border: 1px solid #1f2937;
+}
+
+/* =======================================================================
+  [BQ] “이벤트 타임라인” (수직 라인 + 점 + 내용)
+======================================================================= */
+.timeline { position: relative; padding-left: 20px; }
+.timeline::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: #e5e7eb; }
+.timeline .event { position: relative; padding: 8px 0 8px 12px; }
+.timeline .event::before {
+  content: ""; position: absolute; left: -2px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: #111;
+}
+
+/* =======================================================================
+  [BR] 도움 디버그: 레이아웃 경계 보기, 컨테이너 크기 라벨
+======================================================================= */
+.debug-outline * { outline: 1px dashed rgba(0,0,0,.2); }
+.size-label { position: relative; }
+.size-label::after {
+  content: attr(data-size); position: absolute; top: 0; right: 0; font-size: 11px; padding: 1px 4px;
+  background: #111; color: #fff; border-bottom-left-radius: 6px;
+}
+
+/* =======================================================================
+  [BS] 성능 팁(주석)
+  - will-change 는 남용 금지(메모리/전력 증가). 꼭 필요한 애니메이션 요소에만.
+  - transform/opacity 기반 애니메이션이 layout/paint 비용 적음(대부분의 경우).
+  - 큰 그림자/블러는 합성 비용↑ : 모바일에서 과도 사용 지양.
+  - reflow 유발 속성(top/left/width/height 등) 변화는 빈도 최소화.
+======================================================================= */
+
+
+/* =======================================================================
+  [BT] 상품 목록(그리드) + 카드 퀵액션(호버 시만 노출)
+  - 반응형: auto-fit + minmax
+  - 카드 안에서 액션 버튼은 호버/포커스 시만 나타남(접근성 고려)
+======================================================================= */
+.prod-grid {
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.prod-card {
+  position: relative; display: flex; flex-direction: column; gap: 8px;
+  background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 12px;
+  transition: box-shadow .2s ease, transform .05s ease;
+}
+.prod-card:hover { box-shadow: 0 12px 28px rgba(0,0,0,.12); transform: translateY(-1px); }
+.prod-card .thumb { aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; background: #f5f5f5; }
+.prod-card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.prod-card .title { font-weight: 600; line-height: 1.3; }
+.prod-card .price { font-weight: 700; }
+.prod-card .quick-actions {
+  position: absolute; top: 8px; right: 8px; display: inline-flex; gap: 6px;
+  opacity: 0; visibility: hidden; transform: translateY(-4px); transition: .15s ease;
+}
+.prod-card:hover .quick-actions,
+.prod-card:focus-within .quick-actions { opacity: 1; visibility: visible; transform: translateY(0); }
+
+/* =======================================================================
+  [BU] 인라인 셀 편집 테이블(시각 강조)
+  - 편집 가능 셀에 focus-within 테두리/그림자
+  - 검증 오류 aria-invalid
+======================================================================= */
+.table-edit { width: 100%; border-collapse: collapse; }
+.table-edit th, .table-edit td { border-bottom: 1px solid #eee; padding: 8px 10px; }
+.cell-edit { position: relative; }
+.cell-edit:focus-within { outline: 2px solid #60a5fa; outline-offset: 2px; background: #f0f7ff; }
+.cell-edit input, .cell-edit select, .cell-edit textarea {
+  width: 100%; border: 1px solid #e5e7eb; border-radius: 6px; padding: 6px 8px; background: #fff;
+}
+.cell-edit [aria-invalid="true"] { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.12); }
+
+/* =======================================================================
+  [BV] 수치/합계 열 고정 + 행 hover 강조 (가로 스크롤 조합)
+======================================================================= */
+.table-freeze-wrap { overflow: auto; border: 1px solid #eee; border-radius: 8px; }
+.table-freeze { border-collapse: separate; border-spacing: 0; width: max(100%, 960px); }
+.table-freeze th, .table-freeze td { padding: 10px 12px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+.table-freeze tbody tr:hover { background: #f7fbff; }
+.table-freeze .freeze-left  { position: sticky; left: 0; background: #fff; z-index: 1; box-shadow: 1px 0 0 rgba(0,0,0,.06); }
+.table-freeze .freeze-right { position: sticky; right: 0; background: #fff; z-index: 1; box-shadow: -1px 0 0 rgba(0,0,0,.06); }
+.table-freeze thead th { position: sticky; top: 0; z-index: 2; background: #fafafa; }
+
+/* =======================================================================
+  [BW] 모바일 바텀 네비게이션(아이콘 탭) + 안전영역 패딩
+======================================================================= */
+.bottom-nav {
+  position: sticky; bottom: 0; z-index: 50;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  background: #fff; border-top: 1px solid #eee; padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav .tab {
+  display: grid; place-items: center; padding: 8px 0; color: #6b7280;
+}
+.bottom-nav .tab[aria-selected="true"] { color: #111; font-weight: 600; }
+
+/* =======================================================================
+  [BX] 토스트 스택(여러 개 겹치기) + 자동 사라짐 애니메이션
+======================================================================= */
+.toast-stack {
+  position: fixed; right: 16px; bottom: 16px; display: grid; gap: 8px; z-index: 2000;
+}
+.toast-item {
+  min-width: 240px; background: #111; color: #fff; border-radius: 12px; padding: 10px 12px;
+  box-shadow: 0 16px 36px rgba(0,0,0,.18); animation: toast-in .2s ease, toast-out .2s ease 4.6s forwards;
+}
+@keyframes toast-in { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes toast-out { to { transform: translateY(8px); opacity: 0; } }
+
+/* =======================================================================
+  [BY] Grid 자동 채움 + dense(틈새 채우기)
+  - 가변 높이 카드에서 빈 공간 최소화
+======================================================================= */
+.grid-dense {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-auto-flow: dense; /* 빈 칸을 뒤 아이템으로 채움 */
+}
+
+/* =======================================================================
+  [BZ] CSS 카운터로 자동 번호 붙이기(섹션/행)
+======================================================================= */
+.counter-list { counter-reset: row; display: grid; gap: 8px; }
+.counter-list .item { counter-increment: row; padding: 8px 10px; border: 1px solid #eee; border-radius: 8px; }
+.counter-list .item::before {
+  content: counter(row) ". "; color: #6b7280; margin-right: 6px;
+}
+
+/* =======================================================================
+  [CA] 인보이스/프린트 레이아웃(인쇄 최적화)
+======================================================================= */
+.invoice {
+  width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; color: #111;
+  padding: 16mm; border: 1px solid #eee;
+}
+.invoice .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+.invoice .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.invoice .tbl { width: 100%; border-collapse: collapse; }
+.invoice .tbl th, .invoice .tbl td { border: 1px solid #ddd; padding: 6px 8px; }
+@media print {
+  .invoice { border: 0; padding: 10mm; width: auto; min-height: auto; }
+  .no-print { display: none !important; }
+}
+
+/* =======================================================================
+  [CB] 접근성: Skip Link(본문 바로가기)
+======================================================================= */
+.skip-link {
+  position: absolute; left: 8px; top: -40px; padding: 8px 10px; background: #111; color: #fff; border-radius: 8px;
+  transition: top .15s ease; z-index: 9999;
+}
+.skip-link:focus { top: 8px; }
+
+/* =======================================================================
+  [CC] 포커스 트랩 시각 보조(모달 내부 탭 이동 경계)
+  - 실제 트랩은 JS 필요, 시각적 표시만 지원
+======================================================================= */
+.trap-area { outline: 2px dashed #93c5fd; outline-offset: 4px; }
+
+/* =======================================================================
+  [CD] 키보드 네비게이션 테이블: 행 포커스/선택 스타일
+======================================================================= */
+.kb-table { width: 100%; border-collapse: collapse; }
+.kb-table th, .kb-table td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+.kb-table tr:focus-within { outline: 2px solid #60a5fa; outline-offset: -2px; }
+.kb-table tr[aria-selected="true"] { background: #e6f0ff; }
+
+/* =======================================================================
+  [CE] 스텝 폼(수직) + 검증 상태 표시
+======================================================================= */
+.step-form { display: grid; gap: 12px; }
+.step-form .step-head { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.step-form .step-body { padding-left: 24px; display: grid; gap: 8px; }
+.step-form .step[aria-invalid="true"] .step-head { color: #b91c1c; }
+.step-form .step[aria-invalid="true"] .step-body { border-left: 2px solid #fecaca; padding-left: 22px; }
+
+/* =======================================================================
+  [CF] 카드 내 폼 그리드(레이블/필드 2열) + 모바일 1열
+======================================================================= */
+.form-grid {
+  display: grid; grid-template-columns: 160px 1fr; gap: 10px 12px; align-items: center;
+}
+.form-grid .label { color: #6b7280; }
+@media (max-width: 768px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+/* =======================================================================
+  [CG] 차트 자리(캔버스/이미지) 반응형 비율 박스
+======================================================================= */
+.chart-box { aspect-ratio: 16/9; background: #f5f7fb; border: 1px dashed #d1d5db; border-radius: 12px; display: grid; place-items: center; }
+
+/* =======================================================================
+  [CH] 알림센터 리스트(아이콘/내용/시간) 정렬
+======================================================================= */
+.notice-list { display: grid; gap: 8px; }
+.notice-item {
+  display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: start;
+  padding: 8px 10px; border: 1px solid #eee; border-radius: 10px; background: #fff;
+}
+.notice-item .time { color: #9ca3af; font-size: 12px; }
+
+/* =======================================================================
+  [CI] 드롭다운 메뉴(오른쪽 정렬 버전)
+======================================================================= */
+.dropdown-r {
+  position: absolute; top: 100%; right: 0; min-width: 200px; padding: 8px;
+  background: #fff; border: 1px solid #eee; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  opacity: 0; visibility: hidden; transform: translateY(8px); transition: .15s ease;
+}
+.show .dropdown-r { opacity: 1; visibility: visible; transform: translateY(0); }
+
+/* =======================================================================
+  [CJ] 키보드 힌트/쇼트컷 뱃지 + 행간 정리
+======================================================================= */
+.kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px; padding: 2px 6px; border: 1px solid #ddd; border-bottom-width: 2px; border-radius: 6px; background: #f9fafb;
+}
+.tight { line-height: 1.2; }
+
+/* =======================================================================
+  [CK] 스크롤 섀도우 힌트(가로 스크롤 가능 시)
+======================================================================= */
+.h-scroll {
+  position: relative; overflow-x: auto; overflow-y: hidden;
+  --shadow: linear-gradient(to right, rgba(0,0,0,.08), rgba(0,0,0,0));
+}
+.h-scroll::before, .h-scroll::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 12px; pointer-events: none;
+}
+.h-scroll::before { left: 0; background: var(--shadow); opacity: 0; transition: opacity .15s; }
+.h-scroll::after  { right: 0; background: linear-gradient(to left, rgba(0,0,0,.08), rgba(0,0,0,0)); opacity: 1; }
+.h-scroll:has(:first-child:is(:hover, :focus))::before { opacity: 0; }
+
+/* =======================================================================
+  [CL] “빈 상태” + CTA 버튼(가운데 정렬)
+======================================================================= */
+.empty-state { display: grid; place-items: center; gap: 8px; padding: 24px; text-align: center; color: #6b7280; }
+.empty-state .cta { display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; }
+
+/* =======================================================================
+  [CM] 캘린더 바(간트 느낌) - 막대 배치
+======================================================================= */
+.bar-grid { display: grid; grid-template-columns: 160px 1fr; gap: 8px; }
+.bar-rows { display: grid; gap: 8px; }
+.bar-track { position: relative; height: 28px; background: #f3f4f6; border-radius: 999px; overflow: hidden; }
+.bar { position: absolute; height: 100%; left: var(--start, 0%); width: var(--len, 10%); background: #2563eb; border-radius: 999px; }
+
+/* =======================================================================
+  [CN] 접근성 강조: aria-busy 로딩 중 스타일, aria-live 영역
+======================================================================= */
+[aria-busy="true"] { cursor: progress; opacity: .6; pointer-events: none; }
+[aria-live] { outline: 2px dashed #c7d2fe; outline-offset: 2px; }
+
+/* =======================================================================
+  [CO] CSV 스타일 표(고정폭 폰트 + 스크롤)
+======================================================================= */
+.csv-box {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: #0b1020; color: #dbeafe; border-radius: 12px; padding: 12px; overflow: auto; border: 1px solid #1f2937;
+  white-space: pre; line-height: 1.4;
+}
+
+/* =======================================================================
+  [CP] 컨텍스트 메뉴(우클릭 메뉴) 베이스
+======================================================================= */
+.ctx-menu {
+  position: fixed; z-index: 3000; min-width: 200px; background: #fff; border: 1px solid #eee; border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,.18);
+  padding: 6px; display: none;
+}
+.ctx-menu[data-open="true"] { display: block; }
+.ctx-menu .item { padding: 8px 10px; border-radius: 8px; }
+.ctx-menu .item:hover { background: #f1f5f9; }
+
+/* =======================================================================
+  [CQ] 로딩 스피너(순수 CSS)
+======================================================================= */
+.spinner {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid #e5e7eb; border-top-color: #2563eb; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =======================================================================
+  [CR] 슬라이드 토글(접힘/펼침 높이 전환, 선행 클래스 필요)
+  - 실제 높이 측정/전환은 JS가 필요하지만, 여긴 전환 스타일만 정의
+======================================================================= */
+.collapse {
+  overflow: hidden; transition: height .2s ease, opacity .2s ease;
+}
+.collapse[aria-hidden="true"] { height: 0 !important; opacity: 0; }
+.collapse[aria-hidden="false"] { opacity: 1; }
+
+/* =======================================================================
+  [CS] 툴칩형 상태 필터 바(선택 토글)
+======================================================================= */
+.state-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+.state { padding: 6px 10px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; }
+.state[aria-pressed="true"] { background: #111; color: #fff; border-color: #111; }
+
+/* =======================================================================
+  [CT] 카드 내 두 칼럼 정보(라벨/값) + 줄바꿈 처리
+======================================================================= */
+.kv { display: grid; grid-template-columns: 120px 1fr; gap: 6px 10px; }
+.kv .k { color: #6b7280; }
+.kv .v { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* =======================================================================
+  [CU] “마지막 업데이트” 뱃지(상단 오른쪽 고정)
+======================================================================= */
+.updated-badge {
+  position: absolute; top: 8px; right: 8px; background: #0ea5e9; color: #fff; border-radius: 999px; padding: 2px 8px; font-size: 11px;
+}
+
+/* =======================================================================
+  [CV] 접근성 요약(주석)
+  - :focus-visible 로 키보드 포커스 표시는 유지하되 마우스 클릭 과도 노출 방지
+  - aria-* 속성으로 상태(pressed, selected, busy, invalid)와 역할(role)을 명시
+  - 색에만 의존하지 말고 아이콘/텍스트/형태로 상태 중복 전달
+  - Skip Link 제공(키보드로 본문 바로 이동)
+  - 컨트라스트 비율 준수(일반 텍스트 4.5:1 이상 권장)
+======================================================================= */
+

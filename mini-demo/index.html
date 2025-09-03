@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>댓글 카드 데모</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <!-- 3단계 큰 레이아웃 구조부터 작성  -->
+    <!-- header / main / footer 같은 시멘틱 태그를 먼저 적는다 -->
+    <!-- div는 꼭 필요할 때만 "묶는 용도"로 사용, 처음부터 남발 x -->
+
+    <!-- header -->
+    <header class="site-header">
+        <h1 class="site-title">Mini Feed</h1>
+        <nav aria-label="주요">
+            <a href="#content">건너뛰기</a>
+        </nav>
+    </header>
+
+    <!-- main : 카드 리스트 -->
+    <main id="content" class="container">
+        <section aria-labelledby="recent">
+            <h2 id="recent">최근 게시물</h2>
+
+            <article class="card" data-post-id="1">
+                <header class="card__header">
+                    <h3 class="card__title">첫 글</h3>
+                    <time datetime="2025-08-24">방금 전</time>
+                    <!-- 시간 날짜 데이터 의미부여 -->
+                </header>
+
+                <p>안녕하세요 !</p>
+
+                <div class="card__actions">
+                    <button class="btn" data-like aria-pressed="false">
+                        ❤️ <span data-like-count>0</span>
+                    </button>
+                </div>
+
+                <form autocomplete="off" class="comment-form">
+                    <!-- autocomplete="off" : 자동완성 기능 off -->
+                    <label class="sr-only" for="c1">댓글 달기</label>
+                    <!-- 라벨은 입력요소에 설명을 붙여주는 역할 -->
+                    <input id="c1" name="comment" placeholder="댓글 달기..." required />
+                    <!-- required : input이 비어있으면 form 제출이 되지않음  -->
+                    <button class="btn" type="submit">게시</button>
+                </form>
+
+                <ul class="comments" aria-label="댓글 목록"></ul>
+            </article>
+        </section>
+    </main>
+
+    <!-- footer -->
+    <footer class="site-footer">© 2025</footer>
+
+    <!-- 4단계 : 그안에서 세부 컴포넌트(article, section , nav 등) 작성 -->
+    <!-- 내용은 h1~h6, p, img, button, form, 순으로 의미있는 태그를 우선 사용 -->
+
+    <!-- 5단계 HTML 뼈대 다 짠 후에 CSS 작성 시작 -->
+     <!-- CSS는 베이스(reset, 박스사이징, 글꼴) -> 레이아웃(container, grid/flex) -> 컴포넌트(버튼, 카드) -->
+
+    <script src="./main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,129 @@
+/* style.css */
+/* 베이스 */
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --space-1: 6px;
+  --space-2: 10px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --radius: 12px;
+  --border: #e5e7eb; /* 회색 */
+}
+
+html,
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 var(--space-3);
+}
+
+.site-header,
+.site-footer {
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+.site-header {
+  padding: var(--space-3);
+  position: sticky;
+  top: 0;
+}
+
+.site-title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.site-footer {
+  padding: var(--space-3);
+  border-top: 1px solid var(--border);
+  border-bottom: 0;
+}
+
+/* 컴포넌트 */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
+}
+
+.card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.card__title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.card__text {
+  margin: 0 0 var(--space-2);
+}
+
+.btn {
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* 폼/댓글 */
+.comment-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.comment-form input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.comments {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.comments li {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+/* 접근성 유틸(화면에 안 보이지만 읽히게) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
