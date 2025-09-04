@@ -1,129 +1,137 @@
 /* style.css */
-/* 베이스 */
+
+/* ========== 베이스 ========== */
 * {
-  box-sizing: border-box;
+  box-sizing: border-box; 
+  /* 기본값은 content-box → width, height에 콘텐츠만 포함
+     padding, border는 바깥에 더해져 실제 박스 크기가 커짐 (예측 어려움)
+     border-box로 바꾸면 → width, height 값에 padding, border까지 포함
+     즉 "내가 준 크기 = 실제 보이는 크기"가 되어 레이아웃 계산이 단순해짐 */
 }
 
 :root {
-  --space-1: 6px;
-  --space-2: 10px;
-  --space-3: 16px;
-  --space-4: 24px;
-  --radius: 12px;
-  --border: #e5e7eb; /* 회색 */
+    --space-1: 6px;   /* 아주 작은 간격(댓글 사이, 작은 여백 등에 사용) */
+  --space-2: 10px;  /* 작은 간격 (버튼 사이, 폼 간격 등) */
+  --space-3: 16px;  /* 보통 간격 (전체 패딩, 카드 내부 여백 등) */
+  --space-4: 24px;  /* 큰 간격 (레이아웃 큰 패딩, 섹션 간격 등) */
+  --radius: 12px;   /* 박스 모서리 둥글기 기본값 */
+  --border: #e5e7eb; /* 연한 회색 → 카드, 입력창 테두리에 사용 */
 }
 
 html,
 body {
-  margin: 0;
+  margin: 0; /* 브라우저 기본 여백 제거 → 전체 화면 꽉 채움 */
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  /* 시스템 기본 폰트 우선 → OS별 자연스러운 글꼴 사용 */
 }
 
 .container {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 0 var(--space-3);
+  max-width: 720px;       /* 본문은 가로폭 최대 720px */
+  margin: 0 auto;         /* 좌우 중앙 정렬 */
+  padding: 0 var(--space-3); /* 양 옆 16px 여백 */
 }
 
+/* ========== 헤더/푸터 ========== */
 .site-header,
 .site-footer {
-  border-bottom: 1px solid var(--border);
-  background: #fff;
+  border-bottom: 1px solid var(--border); /* 아래쪽에 회색 경계선 */
+  background: #fff;                       /* 흰색 배경 */
 }
 
 .site-header {
-  padding: var(--space-3);
-  position: sticky;
-  top: 0;
+  padding: var(--space-3); /* 안쪽 여백 16px */
+  position: sticky;        /* 화면 스크롤 시 상단 고정 */
+  top: 0;                  /* 항상 위에 붙음 */
 }
 
 .site-title {
-  margin: 0;
-  font-size: 20px;
+  margin: 0;           /* h1 기본 여백 제거 */
+  font-size: 20px;     /* 글자 크기 조정 */
 }
 
 .site-footer {
-  padding: var(--space-3);
-  border-top: 1px solid var(--border);
-  border-bottom: 0;
+  padding: var(--space-3);         /* 안쪽 여백 16px */
+  border-top: 1px solid var(--border); /* 위쪽에 선 추가 */
+  border-bottom: 0;               /* 아래쪽 선 제거 */
 }
 
-/* 컴포넌트 */
+/* ========== 카드 컴포넌트 (게시글 하나 단위) ========== */
 .card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--space-3);
-  margin: var(--space-3) 0;
+  background: #fff;                 /* 흰 배경 */
+  border: 1px solid var(--border);  /* 테두리 */
+  border-radius: var(--radius);     /* 모서리 둥글게 (12px) */
+  padding: var(--space-3);          /* 내부 여백 16px */
+  margin: var(--space-3) 0;         /* 위아래 여백 16px, 좌우 없음 */
 }
 
 .card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-2);
+  display: flex;                    /* 가로 정렬 */
+  justify-content: space-between;   /* 양쪽 끝으로 배치 (제목 왼쪽, 시간 오른쪽) */
+  align-items: center;              /* 세로 가운데 정렬 */
+  margin-bottom: var(--space-2);    /* 아래쪽 간격 10px */
 }
 
 .card__title {
-  margin: 0;
-  font-size: 18px;
+  margin: 0;       /* h3 기본 여백 제거 */
+  font-size: 18px; /* 제목 크기 */
 }
 
 .card__text {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-2); /* 아래쪽만 10px 간격 */
 }
 
+/* ========== 버튼 ========== */
 .btn {
-  border: 1px solid var(--border);
-  background: #fff;
-  padding: 8px 12px;
-  border-radius: 10px;
-  cursor: pointer;
+  border: 1px solid var(--border);  /* 얇은 회색 테두리 */
+  background: #fff;                 /* 흰 배경 */
+  padding: 8px 12px;                /* 상하 8px, 좌우 12px 여백 */
+  border-radius: 10px;              /* 살짝 둥근 모서리 */
+  cursor: pointer;                  /* 마우스 올리면 손가락 모양 */
 }
 
 .btn:active {
-  transform: translateY(1px);
+  transform: translateY(1px); 
+  /* 클릭했을 때 살짝 눌리는 듯한 효과 (아래로 1px 이동) */
 }
 
-/* 폼/댓글 */
+/* ========== 폼/댓글 ========== */
 .comment-form {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+  display: flex;             /* 가로 정렬 (input과 버튼이 옆으로 배치됨) */
+  gap: var(--space-2);       /* 요소 사이 간격 10px */
+  margin-top: var(--space-2);/* 위쪽에 10px 간격 */
 }
 
 .comment-form input {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  flex: 1;                      /* 가능한 남은 공간 전부 차지 */
+  padding: 10px;                /* 안쪽 여백 */
+  border: 1px solid var(--border); /* 회색 테두리 */
+  border-radius: 10px;          /* 둥근 모서리 */
 }
 
 .comments {
-  list-style: none;
-  margin: var(--space-2) 0 0;
-  padding: 0;
-  display: grid;
-  gap: var(--space-1);
+  list-style: none;             /* ul 점 제거 */
+  margin: var(--space-2) 0 0;   /* 위쪽만 10px 간격 */
+  padding: 0;                   /* 기본 패딩 제거 */
+  display: grid;                /* 댓글들을 블록으로 쌓음 */
+  gap: var(--space-1);          /* 댓글 간격 6px */
 }
 
 .comments li {
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fafafa;
+  padding: 8px 10px;            /* 안쪽 여백 */
+  border: 1px solid var(--border); /* 회색 테두리 */
+  border-radius: 10px;          /* 둥근 모서리 */
+  background: #fafafa;          /* 아주 옅은 회색 배경 */
 }
 
-/* 접근성 유틸(화면에 안 보이지만 읽히게) */
+/* ========== 접근성 유틸 ========== */
 .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  position: absolute; /* 화면상 위치에서 제거 */
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;   /* 화면에서 보이지 않게 */
+  clip: rect(0, 0, 0, 0); /* 잘라내기 */
   white-space: nowrap;
   border: 0;
+  /* → 실제 화면에는 안 보이지만 스크린리더는 읽을 수 있도록 하는 기법 */
 }
