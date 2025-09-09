@@ -1,16 +1,9 @@
-
-import UserProfile from "./component/UserProfile"
 import Button from "./component/Button"
 
 export default function App() {
-  return (<>
-  <Button 
-  handleClick={(message: string) => alert(message)}
-  message="Playing">
-    Play Movie
-    </Button>
-  <Button handleClick={(message: string) => alert(message)} message="Uploadigng">
-    Upload image</Button>
+  return (
+  <>
+    <Button />
   </>)
 }
 
@@ -34,6 +27,8 @@ export default function App() {
 <button onClick={() => handleClick(1)}></button>
 2. 매개변수가 있으면 화살표함수로 감싸서 전달한다
 
+리액트에서는 합성 이벤트 객체를 사용한다
+원본 DOM 이벤트 객체를 감싸(래핑) 최적화한 리액트 전용 이벤트 객체이다.
 
 
 */
